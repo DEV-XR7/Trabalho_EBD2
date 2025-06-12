@@ -14,4 +14,4 @@ Faz o passo anterior até encontrar ) ou terminar leitura <br />
 Verificador de numero/sinal = Carro de string <br />
 Confere se é um sinal(+,-,*,/,^,%), operação unica(log10,sen,cos,tg,raiz) (pre colocados) ou numero <br />
 Empilha numeros na saida ou na pilha até encontrar sinal <br />
-Se é numero tenta transformar em double
+Se é numero tenta transformar em double = strtod
