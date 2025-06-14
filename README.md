@@ -14,4 +14,9 @@ Faz o passo anterior até encontrar ) ou terminar leitura <br />
 Verificador de numero/sinal = Carro de string <br />
 Confere se é um sinal(+,-,*,/,^,%), operação unica(log10,sen,cos,tg,raiz) (pre colocados) ou numero <br />
 Empilha numeros na saida ou na pilha até encontrar sinal <br />
-Se é numero tenta transformar em double = strtod
+Se é numero tenta transformar em double = strtod <br />
+<br />
+MAIN.C <br />
+Opções de seleção com Swith (com a chamada de todos os gets) <br />
+Nas chamadas dos gets de numero (faz a resolução da equação) <br />
+Nos de numero tem que ter o um menu escrito das operações suportadas
