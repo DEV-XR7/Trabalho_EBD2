@@ -77,8 +77,9 @@ char *getFormaPosFixa(char *Str){ // Retorna a forma posFixa de Str (inFixa)
     int ehParenteses(const char *token) {
         if (*token == '(' || *token == ')') {
             Parenteses(token, &pilha, saida);
+            return 1; // É parêntese
         }
-        
+        return 0; // Não é parêntese
     }
 
     int ehOperador(const char *token) {
@@ -97,7 +98,8 @@ char *getFormaPosFixa(char *Str){ // Retorna a forma posFixa de Str (inFixa)
         strtod(token, &end);
         return (*end == '\0');
     }
+
+
 }
 float getValorPosFixa(char *StrPosFixa); // Calcula o valor de Str (na forma posFixa) 
 float getValorInFixa(char *StrInFixa); // Calcula o valor de Str (na forma inFixa) 
-
