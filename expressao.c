@@ -100,3 +100,5 @@ char *getFormaPosFixa(char *Str){ // Retorna a forma posFixa de Str (inFixa)
 }
 float getValorPosFixa(char *StrPosFixa); // Calcula o valor de Str (na forma posFixa) 
 float getValorInFixa(char *StrInFixa); // Calcula o valor de Str (na forma inFixa) 
+
+// Função para calcular o valor de uma expressão na forma posFixa
