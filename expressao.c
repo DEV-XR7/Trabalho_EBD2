@@ -61,10 +61,10 @@ void Parenteses(const char *token, Pilha *pilha, char *saida) {
 char *getFormaInFixa(char *Str); // Retorna a forma inFixa de Str (posFixa) 
 char *getFormaPosFixa(char *Str){ // Retorna a forma posFixa de Str (inFixa) 
 
-        Pilha pilha; // Pilha para armazenar os operadores
-        static char saida[MAX]; // String para armazenar a saída
-        saida[0] = '\0'; // Inicializa a string de saída
-        IniciodaPilha(&pilha); // Inicializa a pilha
+    Pilha pilha; // Pilha para armazenar os operadores
+    static char saida[MAX]; // String para armazenar a saída
+    saida[0] = '\0'; // Inicializa a string de saída
+    IniciodaPilha(&pilha); // Inicializa a pilha
 
     int contem(const char *lista[], int tamanho, const char *token) {
         for (int i = 0; i < tamanho; i++){
@@ -101,4 +101,3 @@ char *getFormaPosFixa(char *Str){ // Retorna a forma posFixa de Str (inFixa)
 float getValorPosFixa(char *StrPosFixa); // Calcula o valor de Str (na forma posFixa) 
 float getValorInFixa(char *StrInFixa); // Calcula o valor de Str (na forma inFixa) 
 
-// Função para calcular o valor de uma expressão na forma posFixa
