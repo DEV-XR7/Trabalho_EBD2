@@ -11,19 +11,19 @@ typedef struct {
     int topo; // Índice do topo da pilha
 } Pilha;    
 
-void IniciodaPilha(Pilha *P) { //Cria uma pilha vazia
-    P->topo = -1; //Vazio real
+void IniciodaPilha(Pilha *P) {
+    P->topo = -1; // Inicializa a pilha como vazia
 }
 
-int pilhaVazia(Pilha *P) { //Verifica se a pilha está vazia
+int pilhaVazia(Pilha *P) {
     return P->topo == -1;
 }
 
-int pilhaCheia(Pilha *P) { //Verifica se a pilha está cheia
-    return P->topo == MAX - 1; //MAX é o tamanho máximo da pilha
+int pilhaCheia(Pilha *P) {
+    return P->topo == MAX - 1;
 }
 
-void acrescenta(Pilha *P, char c) { //Coloca um elemento na pilha
+void acrescenta(Pilha *P, char c) {
     if (!pilhaCheia(P)) {
         P->topo++;
         P->vetor[P->topo] = c;
@@ -32,7 +32,7 @@ void acrescenta(Pilha *P, char c) { //Coloca um elemento na pilha
     }
 }
 
-char retira(Pilha *P) { //Retira um elemento da pilha
+char retira(Pilha *P) {
     if (!pilhaVazia(P)) {
         char c = P->vetor[P->topo];
         P->topo--;
@@ -48,58 +48,82 @@ void Parenteses(const char *token, Pilha *pilha, char *saida) {
         acrescenta(pilha, *token); // empilha o '('
     } 
     else if (*token == ')') {
-        while (!pilhaVazia(pilha) && pilha -> vetor[pilha->topo] != '(') {
+        while (!pilhaVazia(pilha) && pilha->vetor[pilha->topo] != '(') {
             char operador = retira(pilha);
             strncat(saida, &operador, 1); // adiciona operador à saída
         }
-        if (!pilhaVazia(pilha) && pilha -> vetor[pilha->topo] == '(') {
+        if (!pilhaVazia(pilha) && pilha->vetor[pilha->topo] == '(') {
             retira(pilha); // remove o '(' da pilha (descarta)
+        } else {
+            printf("O parêntese não foi fechado.\n");
         }
     }
 }
 
-char *getFormaInFixa(char *Str); // Retorna a forma inFixa de Str (posFixa) 
-char *getFormaPosFixa(char *Str){ // Retorna a forma posFixa de Str (inFixa) 
+int contem(const char *lista[], int tamanho, const char *token) {
+    for (int i = 0; i < tamanho; i++) {
+        if (strcmp(lista[i], token) == 0)
+            return 1;
+    }
+    return 0;
+}
 
-    Pilha pilha; // Pilha para armazenar os operadores
+int ehOperador(const char *token) {
+    const char *operadores[] = {"+", "-", "*", "/", "%", "^"};
+    return contem(operadores, 6, token);
+}
+
+int ehFuncao(const char *token) {
+    const char *funcoes[] = {"log", "raiz", "sen", "cos", "tg"};
+    return contem(funcoes, 5, token);
+}
+
+int ehNumero(const char *token) {
+    if (!token || *token == '\0') return 0;
+    char *end;
+    strtod(token, &end);
+    return (*end == '\0');
+}
+
+char *getFormaInFixa(char *Str){} // Retorna a forma inFixa de Str (posFixa) 
+
+char *getFormaPosFixa(char *Str) {
     static char saida[MAX]; // String para armazenar a saída
-    saida[0] = '\0'; // Inicializa a string de saída
+    Pilha pilha;
     IniciodaPilha(&pilha); // Inicializa a pilha
+    saida[0] = '\0'; // Inicializa a string de saída
 
-    int contem(const char *lista[], int tamanho, const char *token) {
-        for (int i = 0; i < tamanho; i++){
-            if (strcmp(lista[i], token) == 0)
-                return 1;
-        return 0;
-        }
-    }
-
-    int ehParenteses(const char *token) {
-        if (*token == '(' || *token == ')') {
+    // Tokeniza a string de entrada
+    char *token = strtok(Str, " ");
+    while (token != NULL) {
+        if (*token == '(') {
+            acrescenta(&pilha, *token); // Adiciona '(' à pilha
+        } else if (*token == ')') {
             Parenteses(token, &pilha, saida);
-            return 1; // É parêntese
+        } else if (ehOperador(token)) {
+            acrescenta(&pilha, *token); // Adiciona operador à pilha
+        } else if (ehFuncao(token)) {
+            acrescenta(&pilha, *token); // Adiciona função à pilha
+        } else if (ehNumero(token)) {
+            strncat(saida, token, strlen(token)); // Adiciona número à saída
+            strncat(saida, " ", 1); // Adiciona espaço após o número
+        } else {
+            printf("Token inválido: %s\n", token);
         }
-        return 0; // Não é parêntese
+        token = strtok(NULL, " ");
     }
 
-    int ehOperador(const char *token) {
-        const char *operadores[] = {"+", "-", "*", "/", "%", "^"};
-        return contem(operadores, 6, token);
+    // Verifica se a pilha está vazia e se a saída não está vazia
+    if (!pilhaVazia(&pilha)) {
+        printf("O parêntese não foi fechado.\n");
+    } else if (strlen(saida) == 0) {
+        printf("A expressão está vazia.\n");
+    } else {
+        printf("Expressão em pós-fixa: %s\n", saida);
     }
 
-    int ehFuncao(const char *token) {
-        const char *funcoes[] = {"log", "raiz", "sen", "cos", "tg"};
-        return contem(funcoes, 5, token);
-    }
-
-    int ehNumero(const char *token) {
-        if (!token || *token == '\0') return 0;
-        char *end;
-        strtod(token, &end);
-        return (*end == '\0');
-    }
-
-
+    return saida; // Retorna a string de saída
 }
+
 float getValorPosFixa(char *StrPosFixa); // Calcula o valor de Str (na forma posFixa) 
 float getValorInFixa(char *StrInFixa); // Calcula o valor de Str (na forma inFixa) 
