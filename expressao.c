@@ -44,10 +44,7 @@ char retira(Pilha *P) {
 }
 
 void Parenteses(const char *token, Pilha *pilha, char *saida) {
-    if (*token == '(') {
-        acrescenta(pilha, *token); // empilha o '('
-    } 
-    else if (*token == ')') {
+    if (*token == ')') {
         while (!pilhaVazia(pilha) && pilha->vetor[pilha->topo] != '(') {
             char operador = retira(pilha);
             strncat(saida, &operador, 1); // adiciona operador à saída
@@ -96,33 +93,51 @@ char *getFormaPosFixa(char *Str) {
     // Tokeniza a string de entrada
     char *token = strtok(Str, " ");
     while (token != NULL) {
+
         if (*token == '(') {
-            acrescenta(&pilha, *token); // Adiciona '(' à pilha
-        } else if (*token == ')') {
+            acrescenta(&pilha, *token);
+        } 
+
+        else if (*token == ')') {
             Parenteses(token, &pilha, saida);
-        } else if (ehOperador(token)) {
-            acrescenta(&pilha, *token); // Adiciona operador à pilha
-        } else if (ehFuncao(token)) {
-            acrescenta(&pilha, *token); // Adiciona função à pilha
-        } else if (ehNumero(token)) {
+            strncat(saida, " ", 2);
+        } 
+        else if (ehOperador(token)) {
+            acrescenta(&pilha, *token);
+        } 
+        else if (ehFuncao(token)) {
+            acrescenta(&pilha, *token);
+        } 
+        else if (ehNumero(token)) {
             strncat(saida, token, strlen(token)); // Adiciona número à saída
-            strncat(saida, " ", 1); // Adiciona espaço após o número
-        } else {
-            printf("Token inválido: %s\n", token);
+            strncat(saida, " ", 2);               // Adiciona espaço após o número
+        } 
+        else {
+            printf("!! Token inválido: %s\n", token);
         }
+        
         token = strtok(NULL, " ");
     }
 
-    // Verifica se a pilha está vazia e se a saída não está vazia
-    if (!pilhaVazia(&pilha)) {
-        printf("O parêntese não foi fechado.\n");
-    } else if (strlen(saida) == 0) {
-        printf("A expressão está vazia.\n");
-    } else {
-        printf("Expressão em pós-fixa: %s\n", saida);
+    while (!pilhaVazia(&pilha)) {
+        char c = retira(&pilha);
+        if (c != '(' && c != ')') {  // Normalmente descartamos parênteses restantes
+            strncat(saida, &c, 1);
+            strncat(saida, " ", 2);
+        } else {
+        }
     }
 
-    return saida; // Retorna a string de saída
+    // Verificações finais
+    if (!pilhaVazia(&pilha)) {
+        printf("!! Erro: Parêntese não foi fechado. Pilha ainda contém: topo = '%c'\n", pilha.vetor[pilha.topo]);
+    } else if (strlen(saida) == 0) {
+        printf("!! Erro: A expressão está vazia.\n");
+    } else {
+        printf("✅ Expressão convertida para pós-fixa: %s\n", saida);
+    }
+
+    return saida;
 }
 
 float getValorPosFixa(char *StrPosFixa); // Calcula o valor de Str (na forma posFixa) 
