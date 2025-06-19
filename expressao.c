@@ -4,57 +4,49 @@
 #include <math.h>
 #include "expressao.h"
 
-#define MAX 512 // Tamanho máximo da pilha
+#define MAX 512
+#define MAX_TOKEN 20
 
 typedef struct {
-    char vetor[MAX]; // Vetor que armazena os elementos da pilha
-    int topo; // Índice do topo da pilha
-} Pilha;    
+    char itens[MAX][MAX_TOKEN];
+    int topo;
+} Pilha;
 
-void IniciodaPilha(Pilha *P) {
-    P->topo = -1; // Inicializa a pilha como vazia
+void IniciodaPilha(Pilha *p) {
+    p->topo = -1;
 }
 
-int pilhaVazia(Pilha *P) {
-    return P->topo == -1;
+int pilhaVazia(Pilha *p) {
+    return p->topo == -1;
 }
 
-int pilhaCheia(Pilha *P) {
-    return P->topo == MAX - 1;
+int pilhaCheia(Pilha *p) {
+    return p->topo == MAX - 1;
 }
 
-void acrescenta(Pilha *P, char c) {
-    if (!pilhaCheia(P)) {
-        P->topo++;
-        P->vetor[P->topo] = c;
+void acrescenta(Pilha *p, const char *str) {
+    if (!pilhaCheia(p)) {
+        p->topo++;
+        strncpy(p->itens[p->topo], str, MAX_TOKEN);
+        p->itens[p->topo][MAX_TOKEN-1] = '\0';
     } else {
         printf("Pilha cheia!\n");
     }
 }
 
-char retira(Pilha *P) {
-    if (!pilhaVazia(P)) {
-        char c = P->vetor[P->topo];
-        P->topo--;
-        return c;
+char *retira(Pilha *p) {
+    if (!pilhaVazia(p)) {
+        return p->itens[p->topo--];
     } else {
         printf("Pilha vazia!\n");
-        return '\0'; // Retorna um caractere nulo se a pilha estiver vazia
+        return NULL;
     }
 }
 
-void Parenteses(const char *token, Pilha *pilha, char *saida) {
-    if (*token == ')') {
-        while (!pilhaVazia(pilha) && pilha->vetor[pilha->topo] != '(') {
-            char operador = retira(pilha);
-            strncat(saida, &operador, 1); // adiciona operador à saída
-        }
-        if (!pilhaVazia(pilha) && pilha->vetor[pilha->topo] == '(') {
-            retira(pilha); // remove o '(' da pilha (descarta)
-        } else {
-            printf("O parêntese não foi fechado.\n");
-        }
-    }
+char *topo(Pilha *p) {
+    if (!pilhaVazia(p))
+        return p->itens[p->topo];
+    return NULL;
 }
 
 int contem(const char *lista[], int tamanho, const char *token) {
@@ -71,7 +63,7 @@ int ehOperador(const char *token) {
 }
 
 int ehFuncao(const char *token) {
-    const char *funcoes[] = {"log", "raiz", "sen", "cos", "tg"};
+    const char *funcoes[] = {"sen", "cos", "tg", "log", "raiz"};
     return contem(funcoes, 5, token);
 }
 
@@ -82,63 +74,85 @@ int ehNumero(const char *token) {
     return (*end == '\0');
 }
 
-char *getFormaInFixa(char *Str){} // Retorna a forma inFixa de Str (posFixa) 
+int precedencia(const char *token) {
+    if (strcmp(token, "sen") == 0 || strcmp(token, "cos") == 0 ||
+        strcmp(token, "tg") == 0 || strcmp(token, "log") == 0)
+        return 4;
+    else if (strcmp(token, "raiz") == 0 || strcmp(token, "^") == 0)
+        return 3;
+    else if (strcmp(token, "*") == 0 || strcmp(token, "/") == 0 || strcmp(token, "%") == 0)
+        return 2;
+    else if (strcmp(token, "+") == 0 || strcmp(token, "-") == 0)
+        return 1;
+    else if (strcmp(token, "(") == 0 || strcmp(token, ")") == 0)
+        return 5;
+    return 0;
+}
 
-char *getFormaPosFixa(char *Str) {
-    static char saida[MAX]; // String para armazenar a saída
+int ehParentese(const char *token) {
+    return (strcmp(token, "(") == 0 || strcmp(token, ")") == 0);
+}
+
+char *getFormaPosFixa(char *str) {
+    static char saida[MAX*MAX_TOKEN];
+    saida[0] = '\0';
+
     Pilha pilha;
-    IniciodaPilha(&pilha); // Inicializa a pilha
-    saida[0] = '\0'; // Inicializa a string de saída
+    IniciodaPilha(&pilha);
 
-    // Tokeniza a string de entrada
-    char *token = strtok(Str, " ");
+    char *token = strtok(str, " ");
     while (token != NULL) {
 
-        if (*token == '(') {
-            acrescenta(&pilha, *token);
-        } 
-
-        else if (*token == ')') {
-            Parenteses(token, &pilha, saida);
-            strncat(saida, " ", 2);
-        } 
-        else if (ehOperador(token)) {
-            acrescenta(&pilha, *token);
-        } 
-        else if (ehFuncao(token)) {
-            acrescenta(&pilha, *token);
-        } 
-        else if (ehNumero(token)) {
-            strncat(saida, token, strlen(token)); // Adiciona número à saída
-            strncat(saida, " ", 2);               // Adiciona espaço após o número
-        } 
-        else {
-            printf("!! Token inválido: %s\n", token);
+        if (ehNumero(token)) {
+            strcat(saida, token);
+            strcat(saida, " ");
         }
-        
+        else if (ehFuncao(token)) {
+            acrescenta(&pilha, token);
+        }
+        else if (ehOperador(token)) {
+            while (!pilhaVazia(&pilha) && !ehParentese(topo(&pilha)) &&
+                   precedencia(topo(&pilha)) >= precedencia(token)) {
+                strcat(saida, retira(&pilha));
+                strcat(saida, " ");
+            }
+            acrescenta(&pilha, token);
+        }
+        else if (strcmp(token, "(") == 0) {
+            acrescenta(&pilha, token);
+        }
+        else if (strcmp(token, ")") == 0) {
+            while (!pilhaVazia(&pilha) && strcmp(topo(&pilha), "(") != 0) {
+                strcat(saida, retira(&pilha));
+                strcat(saida, " ");
+            }
+            if (!pilhaVazia(&pilha) && strcmp(topo(&pilha), "(") == 0) {
+                retira(&pilha);
+            } else {
+                printf("Erro: Parêntese não fechado\n");
+                return NULL;
+            }
+            if (!pilhaVazia(&pilha) && ehFuncao(topo(&pilha))) {
+                strcat(saida, retira(&pilha));
+                strcat(saida, " ");
+            }
+        }
+        else {
+            printf("Token inválido: %s\n", token);
+            return NULL;
+        }
+
         token = strtok(NULL, " ");
     }
 
     while (!pilhaVazia(&pilha)) {
-        char c = retira(&pilha);
-        if (c != '(' && c != ')') {  // Normalmente descartamos parênteses restantes
-            strncat(saida, &c, 1);
-            strncat(saida, " ", 2);
-        } else {
+        if (strcmp(topo(&pilha), "(") == 0 || strcmp(topo(&pilha), ")") == 0) {
+            printf("Erro: Parêntese não fechado\n");
+            return NULL;
         }
-    }
-
-    // Verificações finais
-    if (!pilhaVazia(&pilha)) {
-        printf("!! Erro: Parêntese não foi fechado. Pilha ainda contém: topo = '%c'\n", pilha.vetor[pilha.topo]);
-    } else if (strlen(saida) == 0) {
-        printf("!! Erro: A expressão está vazia.\n");
-    } else {
-        printf("✅ Expressão convertida para pós-fixa: %s\n", saida);
+        strcat(saida, retira(&pilha));
+        strcat(saida, " ");
     }
 
     return saida;
 }
-
-float getValorPosFixa(char *StrPosFixa); // Calcula o valor de Str (na forma posFixa) 
-float getValorInFixa(char *StrInFixa); // Calcula o valor de Str (na forma inFixa) 
