@@ -90,6 +90,7 @@ void preparaExpressao(const char *entrada, char *saida) {
     for (int i = 0; entrada[i] != '\0'; i++) {
         char c = entrada[i];
 
+        if (c == ',') c = '.';  // <<<<< Substitui vírgula por ponto
         if (c == ' ') continue;
 
         if (ehCaractereFuncao(c)) {
