@@ -351,3 +351,16 @@ float getValorPosFixa(char *StrPosFixa) {
 
     return atof(retira(&pilha));
 }
+
+float getValorInFixa(char *StrInFixa) {
+    char entradaFormatada[MAX * 2];
+    preparaExpressao(StrInFixa, entradaFormatada);
+
+    char *posfixa = getFormaPosFixa(entradaFormatada);
+    if (posfixa == NULL) {
+        printf("Erro ao converter a expressão infixa para pós-fixa.\n");
+        return 0.0f;
+    }
+
+    return getValorPosFixa(posfixa);
+}

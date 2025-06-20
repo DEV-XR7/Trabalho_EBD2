@@ -13,6 +13,7 @@ int main() {
     printf("Escolha a operação:\n");
     printf("1 - Converter expressão infixa para pós-fixa\n");
     printf("2 - Calcular valor de expressão pós-fixa\n");
+    printf("3 - Calcular valor de expressão infixa\n");
     printf("Opcao: ");
     int opcao;
     scanf("%d", &opcao);
@@ -43,7 +44,15 @@ int main() {
         float resultado = getValorPosFixa(entrada);
         printf("Resultado: %f\n", resultado);
 
-    } else {
+    } else if (opcao == 3) {
+        printf("Digite a expressão infixa: ");
+        fgets(entrada, sizeof(entrada), stdin);
+        entrada[strcspn(entrada, "\n")] = 0;
+
+        float resultado = getValorInFixa(entrada);
+        printf("Resultado: %f\n", resultado);
+    }
+    else {
         printf("Opção inválida.\n");
     }
 
