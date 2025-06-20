@@ -63,7 +63,7 @@ int ehOperador(const char *token) {
 }
 
 int ehFuncao(const char *token) {
-    const char *funcoes[] = {"sen", "cos", "tg", "log", "raiz"};
+    const char *funcoes[] = {"sen", "cos", "tg", "log", "raiz", "abs"};
     return contem(funcoes, 5, token);
 }
 
@@ -72,6 +72,55 @@ int ehNumero(const char *token) {
     char *end;
     strtod(token, &end);
     return (*end == '\0');
+}
+
+int ehCaractereFuncao(char c) {
+    return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
+}
+
+int ehOperadores(char c) {
+    return c == '+' || c == '-' || c == '*' || c == '/' || c == '%' || c == '^';
+}
+
+void preparaExpressao(const char *entrada, char *saida) {
+    int j = 0;
+    char funcBuffer[20];
+    int funcIndex = 0;
+
+    for (int i = 0; entrada[i] != '\0'; i++) {
+        char c = entrada[i];
+
+        if (c == ' ') continue;
+
+        if (ehCaractereFuncao(c)) {
+            funcBuffer[funcIndex++] = c;
+        } else {
+            if (funcIndex > 0) {
+                funcBuffer[funcIndex] = '\0';
+                for (int k = 0; funcBuffer[k] != '\0'; k++)
+                    saida[j++] = funcBuffer[k];
+                saida[j++] = ' ';
+                funcIndex = 0;
+            }
+
+            if (c == '(' || c == ')' || ehOperadores(c)) {
+                saida[j++] = ' ';
+                saida[j++] = c;
+                saida[j++] = ' ';
+            } else {
+                saida[j++] = c;
+            }
+        }
+    }
+
+    if (funcIndex > 0) {
+        funcBuffer[funcIndex] = '\0';
+        for (int k = 0; funcBuffer[k] != '\0'; k++)
+            saida[j++] = funcBuffer[k];
+        saida[j++] = ' ';
+    }
+
+    saida[j] = '\0';
 }
 
 int precedencia(const char *token) {

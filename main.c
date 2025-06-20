@@ -5,28 +5,19 @@
 
 #define MAX 512
 
-void preparaExpressao(const char *entrada, char *saida) {
-    int j = 0;
-    for (int i = 0; entrada[i] != '\0'; i++) {
-        if (entrada[i] == '(' || entrada[i] == ')') {
-            saida[j++] = ' ';
-            saida[j++] = entrada[i];
-            saida[j++] = ' ';
-        } else {
-            saida[j++] = entrada[i];
-        }
-    }
-    saida[j] = '\0';
-}
+void preparaExpressao(const char *entrada, char *saida);
 
 int main() {
     char entrada[MAX];
-    char entradaFormatada[MAX*2]; // espaço extra para adicionar espaços
+    char entradaFormatada[MAX * 2] = {0}; // espaço extra para adicionar espaços
+
     printf("Digite a expressão: ");
     fgets(entrada, MAX, stdin);
     entrada[strcspn(entrada, "\n")] = 0;
 
     preparaExpressao(entrada, entradaFormatada);
+
+    printf("entrada formatada: %s\n", entradaFormatada);
 
     char *posfixa = getFormaPosFixa(entradaFormatada);
     if (posfixa != NULL)
