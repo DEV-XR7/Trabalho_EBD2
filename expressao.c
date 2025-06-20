@@ -57,6 +57,68 @@ int contem(const char *lista[], int tamanho, const char *token) {
     return 0;
 }
 
+float absf_manual(float x) {
+    return (x < 0) ? -x : x;
+}
+
+float fmodf_manual(float x, float y) {
+    return x - (int)(x / y) * y;
+}
+
+float powf_manual(float base, int expoente) {
+    float resultado = 1.0;
+    int positivo = (expoente >= 0);
+    expoente = positivo ? expoente : -expoente;
+    for (int i = 0; i < expoente; i++) {
+        resultado *= base;
+    }
+    return positivo ? resultado : 1.0 / resultado;
+}
+
+float sinf_manual(float x) {
+    float termo = x, soma = x;
+    for (int i = 1; i < 10; i++) {
+        termo *= -1 * x * x / ((2 * i) * (2 * i + 1));
+        soma += termo;
+    }
+    return soma;
+}
+
+float cosf_manual(float x) {
+    float termo = 1, soma = 1;
+    for (int i = 1; i < 10; i++) {
+        termo *= -1 * x * x / ((2 * i - 1) * (2 * i));
+        soma += termo;
+    }
+    return soma;
+}
+
+float tanf_manual(float x) {
+    float cos = cosf_manual(x);
+    if (cos == 0) return 0;
+    return sinf_manual(x) / cos;
+}
+
+float log10f_manual(float x) {
+    if (x <= 0) return 0;
+    float ln = 0.0, y = (x - 1) / (x + 1);
+    float y2 = y * y;
+    float termo = y;
+    for (int i = 1; i < 20; i += 2) {
+        ln += termo / i;
+        termo *= y2;
+    }
+    return 2 * ln / 2.302585093;
+}
+
+float sqrtf_manual(float x) {
+    float guess = x / 2.0;
+    for (int i = 0; i < 10; i++) {
+        guess = (guess + x / guess) / 2.0;
+    }
+    return guess;
+}
+
 int ehOperador(const char *token) {
     const char *operadores[] = {"+", "-", "*", "/", "%", "^"};
     return contem(operadores, 6, token);
@@ -205,4 +267,87 @@ char *getFormaPosFixa(char *str) {
     }
 
     return saida;
+}
+
+float getValorPosFixa(char *StrPosFixa) {
+    Pilha pilha;
+    IniciodaPilha(&pilha);
+
+    char expr[MAX];
+    strncpy(expr, StrPosFixa, MAX);
+    expr[MAX - 1] = '\0';
+
+    char *token = strtok(expr, " ");
+    while (token != NULL) {
+        if (ehNumero(token)) {
+            acrescenta(&pilha, token);
+        } else if (ehOperador(token)) {
+            if (pilha.topo < 1) {
+                printf("Erro: operadores insuficientes para operador binário '%s'\n", token);
+                return 0;
+            }
+
+            float b = atof(retira(&pilha));
+            float a = atof(retira(&pilha));
+            float resultado = 0;
+
+            if (strcmp(token, "+") == 0) resultado = a + b;
+            else if (strcmp(token, "-") == 0) resultado = a - b;
+            else if (strcmp(token, "*") == 0) resultado = a * b;
+            else if (strcmp(token, "/") == 0) resultado = a / b;
+            else if (strcmp(token, "%") == 0) resultado = fmodf_manual(a, b);
+            else if (strcmp(token, "^") == 0) resultado = powf_manual(a, (int)b);
+            else {
+                printf("Erro: operador '%s' não suportado\n", token);
+                return 0;
+            }
+
+            char buffer[32];
+            snprintf(buffer, sizeof(buffer), "%f", resultado);
+            acrescenta(&pilha, buffer);
+
+        } else if (ehFuncao(token)) {
+            if (pilha.topo < 0) {
+                printf("Erro: operador insuficiente para função '%s'\n", token);
+                return 0;
+            }
+
+            float x = atof(retira(&pilha));
+            float resultado = 0;
+
+            if (strcmp(token, "sen") == 0)
+                resultado = sinf_manual(x * 3.14159265 / 180.0); // graus para rad
+            else if (strcmp(token, "cos") == 0)
+                resultado = cosf_manual(x * 3.14159265 / 180.0);
+            else if (strcmp(token, "tg") == 0)
+                resultado = tanf_manual(x * 3.14159265 / 180.0);
+            else if (strcmp(token, "log") == 0)
+                resultado = log10f_manual(x);
+            else if (strcmp(token, "raiz") == 0)
+                resultado = sqrtf_manual(x);
+            else if (strcmp(token, "abs") == 0)
+                resultado = absf_manual(x);
+            else {
+                printf("Erro: função '%s' não suportada\n", token);
+                return 0;
+            }
+
+            char buffer[32];
+            snprintf(buffer, sizeof(buffer), "%f", resultado);
+            acrescenta(&pilha, buffer);
+
+        } else {
+            printf("Token inválido: %s\n", token);
+            return 0;
+        }
+
+        token = strtok(NULL, " ");
+    }
+
+    if (pilha.topo != 0) {
+        printf("Erro: expressão malformada. Itens restantes na pilha.\n");
+        return 0;
+    }
+
+    return atof(retira(&pilha));
 }

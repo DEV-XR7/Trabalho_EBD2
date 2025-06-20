@@ -8,22 +8,44 @@
 void preparaExpressao(const char *entrada, char *saida);
 
 int main() {
-    char entrada[MAX];
-    char entradaFormatada[MAX * 2] = {0}; // espaço extra para adicionar espaços
+    char entrada[MAX * 2] = {0};
 
-    printf("Digite a expressão: ");
-    fgets(entrada, MAX, stdin);
-    entrada[strcspn(entrada, "\n")] = 0;
+    printf("Escolha a operação:\n");
+    printf("1 - Converter expressão infixa para pós-fixa\n");
+    printf("2 - Calcular valor de expressão pós-fixa\n");
+    printf("Opcao: ");
+    int opcao;
+    scanf("%d", &opcao);
+    getchar(); // limpa '\n' do buffer
 
-    preparaExpressao(entrada, entradaFormatada);
+    if (opcao == 1) {
+        // Recebe expressão infixa
+        printf("Digite a expressão infixa: ");
+        fgets(entrada, sizeof(entrada), stdin);
+        entrada[strcspn(entrada, "\n")] = 0;
 
-    printf("entrada formatada: %s\n", entradaFormatada);
+        char entradaFormatada[MAX * 2] = {0};
+        preparaExpressao(entrada, entradaFormatada);
 
-    char *posfixa = getFormaPosFixa(entradaFormatada);
-    if (posfixa != NULL)
-        printf("Expressao posfixa: %s\n", posfixa);
-    else
-        printf("Erro ao converter a expressão.\n");
+        char *posfixa = getFormaPosFixa(entradaFormatada);
+        if (posfixa == NULL) {
+            printf("Erro ao converter a expressão.\n");
+            return 1;
+        }
+        printf("Expressão pós-fixa: %s\n", posfixa);
+
+    } else if (opcao == 2) {
+        // Recebe expressão pós-fixa para calcular
+        printf("Digite a expressão pós-fixa: ");
+        fgets(entrada, sizeof(entrada), stdin);
+        entrada[strcspn(entrada, "\n")] = 0;
+
+        float resultado = getValorPosFixa(entrada);
+        printf("Resultado: %f\n", resultado);
+
+    } else {
+        printf("Opção inválida.\n");
+    }
 
     return 0;
 }
