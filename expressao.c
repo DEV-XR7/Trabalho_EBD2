@@ -6,6 +6,13 @@
 
 #define MAX 512
 #define MAX_TOKEN 20
+#define MAX_EXPR 1024  // Novo tamanho para expressões compostas
+
+
+typedef struct {
+    char expressao[MAX];
+    int prioridade;
+} ExpressaoInfo;
 
 typedef struct {
     char itens[MAX][MAX_TOKEN];
@@ -203,6 +210,83 @@ int precedencia(const char *token) {
 
 int ehParentese(const char *token) {
     return (strcmp(token, "(") == 0 || strcmp(token, ")") == 0);
+}
+
+char *getFormaInFixa(char *Str) {
+    ExpressaoInfo pilha[MAX];
+    int topo = -1;
+
+    char copia[MAX];
+    strncpy(copia, Str, MAX);
+    copia[MAX - 1] = '\0';
+
+    char *token = strtok(copia, " ");
+    while (token != NULL) {
+        if (ehNumero(token)) {
+            ExpressaoInfo info;
+            snprintf(info.expressao, sizeof(info.expressao), "%s", token);
+            info.prioridade = 10;
+            pilha[++topo] = info;
+        }
+        else if (ehFuncao(token)) {
+            if (topo < 0) return strdup("ERRO: Falta operando para função");
+
+            ExpressaoInfo arg = pilha[topo--];
+            ExpressaoInfo res;
+
+            if (snprintf(res.expressao, sizeof(res.expressao), "%s(%s)", token, arg.expressao) >= sizeof(res.expressao)) {
+                return strdup("ERRO: expressão muito longa");
+            }
+
+            res.prioridade = 10;
+            pilha[++topo] = res;
+        }
+        else if (ehOperador(token)) {
+            if (topo < 1) return strdup("ERRO: Operação requer dois operandos");
+
+            ExpressaoInfo dir = pilha[topo--];
+            ExpressaoInfo esq = pilha[topo--];
+
+            int prec = precedencia(token);
+            char esqTemp[MAX_EXPR];
+            char dirTemp[MAX_EXPR];
+
+            if (esq.prioridade < prec) {
+                if (snprintf(esqTemp, sizeof(esqTemp), "(%s)", esq.expressao) >= sizeof(esqTemp))
+                    return strdup("ERRO: expressão muito longa");
+            } else {
+                strncpy(esqTemp, esq.expressao, sizeof(esqTemp));
+                esqTemp[sizeof(esqTemp)-1] = '\0';
+            }
+
+            if (dir.prioridade < prec || (dir.prioridade == prec && strcmp(token, "^") != 0)) {
+                if (snprintf(dirTemp, sizeof(dirTemp), "(%s)", dir.expressao) >= sizeof(dirTemp))
+                    return strdup("ERRO: expressão muito longa");
+            } else {
+                strncpy(dirTemp, dir.expressao, sizeof(dirTemp));
+                dirTemp[sizeof(dirTemp)-1] = '\0';
+            }
+
+            ExpressaoInfo res;
+            if (snprintf(res.expressao, sizeof(res.expressao), "%s %s %s", esqTemp, token, dirTemp) >= sizeof(res.expressao)) {
+                return strdup("ERRO: expressão muito longa");
+            }
+
+            res.prioridade = prec;
+            pilha[++topo] = res;
+        }
+        else {
+            return strdup("ERRO: Token desconhecido");
+        }
+
+        token = strtok(NULL, " ");
+    }
+
+    if (topo != 0) {
+        return strdup("ERRO: Expressão incompleta");
+    }
+
+    return strdup(pilha[topo].expressao);
 }
 
 char *getFormaPosFixa(char *str) {
